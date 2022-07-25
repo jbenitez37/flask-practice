@@ -8,7 +8,9 @@ from wtforms.validators import InputRequired, Email, Length
 from flask_sqlalchemy  import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
-import time
+from flask_mail import Mail
+from flask_mail import Message
+
 
 
 app = Flask(__name__)
@@ -19,6 +21,18 @@ bootstrap = Bootstrap(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+mail = Mail(app)
+
+app.config['MAIL_SERVER']='smtp.gmail.com'
+app.config['MAIL_PORT'] = 465
+app.config['MAIL_USERNAME'] = 'reminderbot975@gmail.com'
+app.config['MAIL_PASSWORD'] = 'wnbpnfqsnhmgmahs'
+app.config['MAIL_USE_TLS'] = False
+app.config['MAIL_USE_SSL'] = True
+mail = Mail(app)
+
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,6 +53,7 @@ class RegisterForm(FlaskForm):
     email = StringField('email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
+
 
 
 @app.route('/')
@@ -89,12 +104,20 @@ def logout():
 
 @app.route('/Overview')
 def Overview():
-    return '<h1>Hello, this is reminderBot, I will explain how everything works. After entering your phone number and carrier, simply enter the reminder you want and the time of your choosing. Then a message will be sent to your phone at the specified time.</h1>'
+    return '<h1>Hello, After entering your phone number and carrier, simply enter the reminder you want and the time of your choosing. Then a message will be sent to your phone at the specified time.</h1>'
     
-@app.route('/Remind')
+@app.route("/Remind")
 @login_required
 def Reminder():
-    return('reminder.html') 
+   msg = Message(
+                'Hello',
+                sender ='reminderbot975@gmail.com',
+                recipients = ['6504507443@mms.cricketwireless.net']
+               )
+   msg.body = 'Hello Flask message sent from Flask-Mail'
+   mail.send(msg)
+    
+   return 'Sent'
 
 
 if __name__ == '__main__':
