@@ -1,14 +1,28 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Home page</title>
-    </head>
-    <body>
-        <h1>Home Page</h1>
-        {% for x in range(10)%}
-            {% if x % 2 ==1 %}
-            <p>{{x}}</p>
-            {% endif %}
-        {% endfor %}
-    </body>
-</html>
+{% extends "dashboard.html" %}    <!-- This is the html for the Homepage, uses navbar elements -->
+{% block title %}Home Page{% endblock %}
+{% block content %}
+<h1>Welcome, to ReminderBot</h1>
+    <image src="{{ url_for('static', filename = 'images/bot.png')}}">
+    
+<nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Reminder-Site</a>
+      </div>
+      <div id="navbar" class="collapse navbar-collapse">
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="#">Home</a></li>
+          <li><a href="{{ url_for('login') }}">Login</a></li>  <!--Takes you to the login page-->
+          <li><a href="{{ url_for('signup') }}">Sign Up</a></li> <!--Takes you to the signup page-->
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+  <div class="container">
+{% endblock %}

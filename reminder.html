@@ -1,0 +1,43 @@
+{% extends "dashboard.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}
+Reminder Tab
+{% endblock %}
+
+{% block styles %}
+{{super()}}
+<link rel="stylesheet" href="{{url_for('.static', filename='reminder.css')}}">
+{% endblock %}
+
+</head>
+<body>
+    <form action="/result" method="POST">
+      <p>Subject: <input type="text" name="Subject" /></p>
+      <p>Body: <input type="text" name="Body" /></p>
+      <p>Number: <input type="text" name="Number" <div class="dropdown">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          Dropdown button
+        </button>
+        <ul class="dropdown-menu">
+          <li><a class="dropdown-item" href="#">@vzwpix.com</a></li>
+          <li><a class="dropdown-item" href="#">@mms.att.net</a></li>
+          <li><a class="dropdown-item" href="#">@myboostmobile.com</a></li>
+          <li><a class="dropdown-item" href="#">@mms.cricketwireless.net</a></li>
+          <li><a class="dropdown-item" href="#">@mymetropcs.com</a></li>
+          <li><a class="dropdown-item" href="#">.iws@iwspcs.net</a></li>
+          <li><a class="dropdown-item" href="#">@pm.sprint.com</a></li>
+        </ul>
+      </div> /></p> 
+      <p>Time: <input type="datetime-local" name="datetime"/></p>
+      <p>Submit: <input type="submit" name="Enter"/></p>
+    </form>
+</body>
+</html>
+
+
+
+
+
+
+

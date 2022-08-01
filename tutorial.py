@@ -1,15 +1,15 @@
-from curses import flash
 from ensurepip import bootstrap
 from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm 
 from wtforms import StringField, PasswordField, BooleanField
 from wtforms.validators import InputRequired, Email, Length
-from flask_sqlalchemy  import SQLAlchemy
+from flask_sqlalchemy  import SQLAlchemy #used this to create userdata base so you can sign in and out of the site
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from flask_mail import Mail
-from flask_mail import Message
+from flask_mail import Message 
+from flask import request
 
 
 
@@ -27,15 +27,27 @@ mail = Mail(app)
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
 app.config['MAIL_USERNAME'] = 'reminderbot975@gmail.com'
-app.config['MAIL_PASSWORD'] = 'wnbpnfqsnhmgmahs'
+app.config['MAIL_PASSWORD'] = 'wnbpnfqsnhmgmahs' #password for reminderbot975@gmail.com to bypass security and send email
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 
 
 class User(UserMixin, db.Model):
+    ''' 
+    Creates a data-model called User, with User authentication fields 
+        
+    Parameters
+    ----------
+    id: 
+    db.Column(db.Integer, primary_key=True)
+    username: preffered username
+    email: email of User
+    password: preferred password
+
+    '''
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(15), unique=True)
+    username = db.Column(db.String(15), unique=True) #the db.String() refers to the maximum length of characters 
     email = db.Column(db.String(50), unique=True)
     password = db.Column(db.String(80))
 
@@ -53,10 +65,7 @@ class RegisterForm(FlaskForm):
     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
 
-class Reminder(FlaskForm):
-    reminder = StringField('reminder', validators=[InputRequired(), Length(min=1, max=80)] )
-    time = StringField('time', validators=[InputRequired(), Length(min=11, max=11)] )
-  
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -107,19 +116,22 @@ def logout():
 def Overview():
     return '<h1>Hello, After entering your phone number and carrier, simply enter the reminder you want and the time of your choosing. Then a message will be sent to your phone at the specified time.</h1>'
     
-@app.route("/Remind")
+@app.route("/Remind")     #using flask-mail this sends a message
 @login_required
 def Reminder():
-   msg = Message(
-                'Hello',
-                sender ='reminderbot975@gmail.com',
-                recipients = ['6504507443@mms.cricketwireless.net']
-               )
-   msg.body = 'Hello Flask message sent from Flask-Mail'
-   mail.send(msg)
-    
-   return 'Sent'
+    return render_template('reminder.html')
 
+@app.route('/result', methods=['GET', 'POST']) 
+def result():
+    if request.method == "POST":
+        msg = Message(request.form.get("Subject"), sender='reminderbot975@gmail.com', recipients=[request.form.get("Number"+"dropdown-item")])
+        msg.body = (request.form.get("Body"))
+        mail.send(msg)
+        #with app.open_resource("image.png") as fp:
+            #msg.attach("image.png", "image/png", fp.read())
+        return render_template('result.html', result="cool it works :)")
+    else:
+        return render_template('result.html', result="Failure :(")
 
 if __name__ == '__main__':
     db.create_all()
