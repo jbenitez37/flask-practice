@@ -1,3 +1,5 @@
+from base64 import encode
+from email import message
 from ensurepip import bootstrap
 from sqlite3 import Timestamp
 from flask import Flask, render_template, redirect, url_for
@@ -16,8 +18,11 @@ import time
 import sys 
 sys.path.append('/Users/josue/Desktop/Code/blue-sky')
 import remind_bot as rb
-
-
+import os
+from celery import Celery
+import threading
+from flask import copy_current_request_context
+########################## Configurations
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'Thisissupposedtobesecret!'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.sqlite3'
@@ -27,7 +32,8 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
-mail = Mail(app)
+os.environ.setdefault('FORKED_BY_MULTIPROCESSING', '1')
+celery = Celery(app.name, broker='redis://localhost:6379/0')
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
@@ -37,6 +43,7 @@ app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
 
+###################################
 
 class User(UserMixin, db.Model):
     ''' 
@@ -61,6 +68,14 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 class LoginForm(FlaskForm):
+    '''
+    Creates a data-model called LoginForm, with login fields
+
+    Parameters:
+    username: str
+    password: str
+    remember: boolean
+    '''
     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
     remember = BooleanField('remember me')
@@ -129,22 +144,45 @@ def Reminder():
 @app.route('/result', methods=['GET', 'POST']) 
 def result():
     if request.method == "POST":
-        now = datetime.now()
-        r =  rb.Remind(request.form.get("Subject"), request.form.get("Body"), request.form.get("datetime"))
-        msg = Message(request.form.get("Subject"), sender='reminderapp480@gmail.com', recipients=[request.form.get("Number")])
-        msg.body = (request.form.get("Body") + request.form.get("datetime")) 
-        dt_string = (request.form.get("datetime"))
-        send_time = datetime.strptime(dt_string, "%Y-%m-%dT%H:%M")
+        #r =  rb.Remind(request.form.get("Subject"), request.form.get("Body"), request.form.get("datetime"))
+        subject = request.form.get("Subject")
+        body = request.form.get("Body") 
+        recipient= request.form.get("Number")
         print(request.form)
-        print(f"now: {now}, send time: {send_time}, now <= sendtime: {now <= send_time}") 
+        send_time = datetime.strptime(request.form.get("datetime"), "%Y-%m-%dT%H:%M")
+        message = Message(subject=subject, recipients=[recipient], body=body, sender=app.config['MAIL_USERNAME'])
+        send_async(send_time, message)
+        return render_template('result.html', result="cool it works :)")
+    else:
+        return render_template('result.html', result="Failure :(")
+
+def test_func(message):
+    print("running...")
+    with open("test.txt", "w") as f:
+        f.write(str(message))
+
+
+def test_sender(message):
+    sender = threading.Thread(name='sender_test', target=test_func, args=(message,))
+    sender.start()
+
+        
+def send_async(send_time, message):
+       
+    @copy_current_request_context
+    def send_message(message):
+        print("sending...")
+        now = datetime.now()
+        print(f"now: {now}, send time: {send_time}, now <= sendtime: {now <= send_time}")
         while now <= send_time:
             print(f"now: {now}, send time: {send_time}, now <= sendtime: {now <= send_time}") 
             now = datetime.now()
             time.sleep(1)
-        mail.send(msg)
-        return render_template('result.html', result="cool it works :)")
-    else:
-        return render_template('result.html', result="Failure :(")
+        mail.send(message)
+    print("Before sender")
+    sender = threading.Thread(name='tutorial', target=send_message, args=(message,))
+    sender.start()
+    print("after sender")
 
 if __name__ == '__main__':
     db.create_all()
