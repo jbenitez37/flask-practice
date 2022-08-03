@@ -1,4 +1,5 @@
 from ensurepip import bootstrap
+from sqlite3 import Timestamp
 from flask import Flask, render_template, redirect, url_for
 from flask_bootstrap import Bootstrap
 from flask_wtf import FlaskForm 
@@ -10,7 +11,11 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, log
 from flask_mail import Mail
 from flask_mail import Message 
 from flask import request
-
+from datetime import datetime
+import time 
+import sys 
+sys.path.append('/Users/josue/Desktop/Code/blue-sky')
+import remind_bot as rb
 
 
 app = Flask(__name__)
@@ -26,8 +31,8 @@ mail = Mail(app)
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'reminderbot975@gmail.com'
-app.config['MAIL_PASSWORD'] = 'wnbpnfqsnhmgmahs' #password for reminderbot975@gmail.com to bypass security and send email
+app.config['MAIL_USERNAME'] = 'reminderapp480@gmail.com'
+app.config['MAIL_PASSWORD'] = 'slpmiwsrcrvqyhal' #password for reminderapp480@gmail.com to bypass security and send email
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
@@ -64,7 +69,6 @@ class RegisterForm(FlaskForm):
     email = StringField('email', validators=[InputRequired(), Email(message='Invalid email'), Length(max=50)])
     username = StringField('username', validators=[InputRequired(), Length(min=4, max=15)])
     password = PasswordField('password', validators=[InputRequired(), Length(min=8, max=80)])
-
 
 @app.route('/')
 def index():
@@ -121,14 +125,23 @@ def Overview():
 def Reminder():
     return render_template('reminder.html')
 
+
 @app.route('/result', methods=['GET', 'POST']) 
 def result():
     if request.method == "POST":
-        msg = Message(request.form.get("Subject"), sender='reminderbot975@gmail.com', recipients=[request.form.get("Number"+"dropdown-item")])
-        msg.body = (request.form.get("Body"))
+        now = datetime.now()
+        r =  rb.Remind(request.form.get("Subject"), request.form.get("Body"), request.form.get("datetime"))
+        msg = Message(request.form.get("Subject"), sender='reminderapp480@gmail.com', recipients=[request.form.get("Number")])
+        msg.body = (request.form.get("Body") + request.form.get("datetime")) 
+        dt_string = (request.form.get("datetime"))
+        send_time = datetime.strptime(dt_string, "%Y-%m-%dT%H:%M")
+        print(request.form)
+        print(f"now: {now}, send time: {send_time}, now <= sendtime: {now <= send_time}") 
+        while now <= send_time:
+            print(f"now: {now}, send time: {send_time}, now <= sendtime: {now <= send_time}") 
+            now = datetime.now()
+            time.sleep(1)
         mail.send(msg)
-        #with app.open_resource("image.png") as fp:
-            #msg.attach("image.png", "image/png", fp.read())
         return render_template('result.html', result="cool it works :)")
     else:
         return render_template('result.html', result="Failure :(")

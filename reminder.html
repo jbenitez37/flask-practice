@@ -1,13 +1,8 @@
-{% extends "dashboard.html" %}
-{% import "bootstrap/wtf.html" as wtf %}
-
+<!DOCTYPE html>
+<html> 
+<head>
 {% block title %}
 Reminder Tab
-{% endblock %}
-
-{% block styles %}
-{{super()}}
-<link rel="stylesheet" href="{{url_for('.static', filename='reminder.css')}}">
 {% endblock %}
 
 </head>
@@ -20,20 +15,22 @@ Reminder Tab
           Dropdown button
         </button>
         <ul class="dropdown-menu">
-          <li><a class="dropdown-item" href="#">@vzwpix.com</a></li>
-          <li><a class="dropdown-item" href="#">@mms.att.net</a></li>
-          <li><a class="dropdown-item" href="#">@myboostmobile.com</a></li>
-          <li><a class="dropdown-item" href="#">@mms.cricketwireless.net</a></li>
-          <li><a class="dropdown-item" href="#">@mymetropcs.com</a></li>
-          <li><a class="dropdown-item" href="#">.iws@iwspcs.net</a></li>
-          <li><a class="dropdown-item" href="#">@pm.sprint.com</a></li>
-        </ul>
-      </div> /></p> 
+          <li><a class="dropdown-item active" href="#">@vzwpix.com</a></li>
+          <li><a class="dropdown-item active" href="#">@mms.att.net</a></li>
+          <li><a class="dropdown-item active" href="#">@myboostmobile.com</a></li>
+          <li><a class="dropdown-item active" href="#">@mms.cricketwireless.net</a></li>
+          <li><a class="dropdown-item active" href="#">@mymetropcs.com</a></li>
+          <li><a class="dropdown-item active" href="#">.iws@iwspcs.net</a></li>
+          <li><a class="dropdown-item active" href="#">@pm.sprint.com</a></li>
+          </ul>
+      </div> </p> 
       <p>Time: <input type="datetime-local" name="datetime"/></p>
       <p>Submit: <input type="submit" name="Enter"/></p>
     </form>
 </body>
 </html>
+
+
 
 
 
